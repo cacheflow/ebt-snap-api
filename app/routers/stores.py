@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_session
 from app.models import Store
+import json
 from app.schemas import StoreListResponse, StoreRead
 from app.routers.utils import apply_store_filters
 
@@ -44,8 +45,14 @@ def list_stores(
     stores = session.scalars(
         filtered.order_by(Store.store_name, Store.id).limit(limit or 25).offset(offset)
     ).all()
-
-    return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
+    stores_payload = StoreRead.model_validate(stores).model_dump()
+    return json.dumps(
+        total=total,
+        limit=limit,
+        offset=offset,
+        items=stores_payload,
+        indent=2,
+    )
 
 
 @router.get("/{record_id}", response_model=StoreRead)
@@ -53,4 +60,6 @@ def get_store(record_id: int, session: Annotated[Session, Depends(get_session)])
     store = session.scalar(select(Store).where(Store.record_id == record_id))
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
-    return store
+    
+    payload = StoreRead.model_validate(store).model_dump()
+    return json.dumps(payload, indent=2)
