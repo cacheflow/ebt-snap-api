@@ -24,17 +24,16 @@ def apply_store_filters(
     q = clean(q)
 
     if state:
-        stmt = stmt.where(Store.state == state.upper())
+        stmt = stmt.where(Store.state.ilike(f"%{state}%"))
     if city:
-        stmt = stmt.where(Store.city == city)
+        stmt = stmt.where(Store.city.ilike(f"%{city}%"))
     if zip_code:
         stmt = stmt.where(Store.zip_code == zip_code)
     if store_type:
-        stmt = stmt.where(Store.store_type == store_type)
+        stmt = stmt.where(Store.store_type.ilike(f"%{store_type}%"))
 
     if q: 
         query_pattern = f"%{q}%"
-        print(f"Applying search filter with pattern: {query_pattern}")
         stmt = stmt.where(or_(
             Store.store_name.ilike(query_pattern), 
             Store.store_street_address.ilike(query_pattern), 
