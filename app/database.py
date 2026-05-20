@@ -28,7 +28,6 @@ def get_ssl_connect_args() -> dict[str, str | None]:
 @lru_cache
 def get_engine() -> Engine:
     settings = get_settings()
-    url = make_url(settings.database_url)
     engine_options = {"pool_pre_ping": True}
 
     engine_options["poolclass"] = NullPool
@@ -36,16 +35,6 @@ def get_engine() -> Engine:
         "prepare_threshold": None,
         **get_ssl_connect_args(),
     }
-
-    print(
-        "DATABASE_URL target: "
-        f"user={url.username!r} host={url.host!r} port={url.port!r} "
-        f"password_present={url.password is not None} "
-        f"password_length={len(url.password or '')} "
-        f"sslmode={engine_options['connect_args'].get('sslmode')!r} "
-        f"sslrootcert={engine_options['connect_args'].get('sslrootcert')!r}",
-        flush=True,
-    )
 
     return create_engine(settings.database_url, **engine_options)
 
