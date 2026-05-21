@@ -245,3 +245,6 @@ It can support:
 
 One tiny note: your `GET /stores/{record_id}` route looks up by `Store.record_id`, not database `id`. That’s good, but the README should keep saying `record_id` clearly so future-you doesn’t curse present-you.
 ```
+
+# Live Site
+The site can be accessed at https://ebt-rmp-api-production.up.railway.app/stores
