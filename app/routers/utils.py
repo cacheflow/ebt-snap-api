@@ -1,10 +1,19 @@
 from sqlalchemy import Select, or_
 from app.models import Store
 
+
 def clean(value: str | None) -> str | None:
     if value is None:
         return ""
-    value = value.strip()
+    if isinstance(value, str):
+        value = value.strip()
+    if isinstance(value, list):
+        value = []
+        for v in value:
+            if isinstance(v, str):
+                v = v.strip()
+                if v:
+                    value.append(v)
     return value or None
 
 
@@ -32,16 +41,18 @@ def apply_store_filters(
     if store_type:
         stmt = stmt.where(Store.store_type.ilike(f"%{store_type}%"))
 
-    if q: 
+    if q:
         query_pattern = f"%{q}%"
-        stmt = stmt.where(or_(
-            Store.store_name.ilike(query_pattern), 
-            Store.store_street_address.ilike(query_pattern), 
-            Store.city.ilike(query_pattern), 
-            Store.state.ilike(query_pattern), 
-            Store.zip_code.ilike(query_pattern), 
-            Store.zip4.ilike(query_pattern), 
-            Store.county.ilike(query_pattern), 
-            Store.store_type.ilike(query_pattern), 
-        ))
+        stmt = stmt.where(
+            or_(
+                Store.store_name.ilike(query_pattern),
+                Store.store_street_address.ilike(query_pattern),
+                Store.city.ilike(query_pattern),
+                Store.state.ilike(query_pattern),
+                Store.zip_code.ilike(query_pattern),
+                Store.zip4.ilike(query_pattern),
+                Store.county.ilike(query_pattern),
+                Store.store_type.ilike(query_pattern),
+            )
+        )
     return stmt

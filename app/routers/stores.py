@@ -15,8 +15,12 @@ router = APIRouter(prefix="/stores", tags=["stores"])
 @router.get("", response_model=StoreListResponse)
 def list_stores(
     session: Annotated[Session, Depends(get_session)],
-    state: Annotated[str | None, Query(description="Two-letter state code, e.g. CA")] = None,
-    city: Annotated[str | None, Query(description="City name, e.g. Los Angeles")] = None,
+    state: Annotated[
+        str | None, Query(description="Two-letter state code, e.g. CA")
+    ] = None,
+    city: Annotated[
+        str | None, Query(description="City name, e.g. Los Angeles")
+    ] = None,
     zip_code: Annotated[str | None, Query(description="Five-digit ZIP code")] = None,
     store_type: Annotated[str | None, Query(description="USDA store type")] = None,
     limit: Annotated[int, Query(ge=1, le=500)] = 50,
@@ -46,8 +50,11 @@ def list_stores(
     ).all()
     return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
 
+
 @router.get("/{record_id}", response_model=StoreRead)
-def get_store(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:
+def get_store(
+    record_id: int, session: Annotated[Session, Depends(get_session)]
+) -> Store:
     store = session.scalar(select(Store).where(Store.record_id == record_id))
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
