@@ -12,7 +12,7 @@ from app.routers.utils import apply_store_filters
 router = APIRouter(prefix="/stores", tags=["stores"])
 
 
-@router.get("/rmp", response_model=StoreListResponse)
+@router.get("", response_model=StoreListResponse)
 def list_restaurants(
     session: Annotated[Session, Depends(get_session)],
     state: Annotated[str | None, Query(description="Two-letter state code, e.g. CA")] = None,
@@ -46,7 +46,7 @@ def list_restaurants(
     ).all()
     return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
 
-@router.get("/rmp/{record_id}", response_model=StoreRead)
+@router.get("/{record_id}", response_model=StoreRead)
 def get_restaurant(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:
     store = session.scalar(select(Store).where(Store.record_id == record_id, Store.store_type == 'rmp'))
     if store is None:
