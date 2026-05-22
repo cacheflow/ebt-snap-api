@@ -13,7 +13,7 @@ router = APIRouter(prefix="/stores", tags=["stores"])
 
 
 @router.get("", response_model=StoreListResponse)
-def list(
+def list_stores(
     session: Annotated[Session, Depends(get_session)],
     state: Annotated[str | None, Query(description="Two-letter state code, e.g. CA")] = None,
     city: Annotated[str | None, Query(description="City name, e.g. Los Angeles")] = None,
@@ -45,49 +45,6 @@ def list(
         filtered.order_by(Store.store_name, Store.id).limit(limit or 25).offset(offset)
     ).all()
     return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
-
-
-@router.get("/{record_id}", response_model=StoreRead)
-def get_store(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:
-    store = session.scalar(select(Store).where(Store.record_id == record_id))
-    if store is None:
-        raise HTTPException(status_code=404, detail="Store not found")
-    return store
-
-
-@router.get("/rmp", response_model=StoreListResponse)
-def list_rmp_restaurants(
-    session: Annotated[Session, Depends(get_session)],
-    state: Annotated[str | None, Query(description="Two-letter state code, e.g. CA")] = None,
-    city: Annotated[str | None, Query(description="City name, e.g. Los Angeles")] = None,
-    zip_code: Annotated[str | None, Query(description="Five-digit ZIP code")] = None,
-    limit: Annotated[int, Query(ge=1, le=500)] = 50,
-    q: Annotated[str | None, Query(description="Full-text search query")] = None,
-    offset: Annotated[int, Query(ge=0)] = 0,
-) -> StoreListResponse:
-    filtered = apply_store_filters(
-        select(Store),
-        state=state,
-        city=city,
-        q=q,
-        zip_code=zip_code,
-        store_type=['rmp'],
-    )
-    total_stmt = apply_store_filters(
-        select(func.count()).select_from(Store),
-        state=state,
-        city=city,
-        zip_code=zip_code,
-        store_type=['rmp'],
-        q=q,
-    )
-
-    total = session.scalar(total_stmt) or 0
-    stores = session.scalars(
-        filtered.order_by(Store.store_name, Store.id).limit(limit or 25).offset(offset)
-    ).all()
-    return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
-
 
 @router.get("/{record_id}", response_model=StoreRead)
 def get_store(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:

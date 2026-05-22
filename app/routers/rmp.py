@@ -13,7 +13,7 @@ router = APIRouter(prefix="/stores", tags=["stores"])
 
 
 @router.get("/rmp", response_model=StoreListResponse)
-def list(
+def list_restaurants(
     session: Annotated[Session, Depends(get_session)],
     state: Annotated[str | None, Query(description="Two-letter state code, e.g. CA")] = None,
     city: Annotated[str | None, Query(description="City name, e.g. Los Angeles")] = None,
@@ -47,7 +47,7 @@ def list(
     return StoreListResponse(total=total, limit=limit, offset=offset, items=stores)
 
 @router.get("/rmp/{record_id}", response_model=StoreRead)
-def get_store(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:
+def get_restaurant(record_id: int, session: Annotated[Session, Depends(get_session)]) -> Store:
     store = session.scalar(select(Store).where(Store.record_id == record_id, Store.store_type == 'rmp'))
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
