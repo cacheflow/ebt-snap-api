@@ -3,7 +3,24 @@ import csv
 import re
 import sys
 from pathlib import Path
+import pdb
+from rich import print
 from typing import Any, Iterator
+
+import json
+from supabase import create_client
+from urllib.parse import quote
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+databse_url = os.getenv("SUPABASE_URL")
+supabase_key = quote(os.getenv("SUPABASE_KEY") or "", safe="")
+
+supabase = create_client(databse_url, supabase_key)
+
 
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -72,7 +89,9 @@ def clean_row(row: dict[str, str | None]) -> dict[str, Any]:
     return cleaned
 
 
-def batched(rows: Iterator[dict[str, Any]], batch_size: int) -> Iterator[list[dict[str, Any]]]:
+def batched(
+    rows: Iterator[dict[str, Any]], batch_size: int
+) -> Iterator[list[dict[str, Any]]]:
     batch: list[dict[str, Any]] = []
     for row in rows:
         batch.append(row)
@@ -81,6 +100,20 @@ def batched(rows: Iterator[dict[str, Any]], batch_size: int) -> Iterator[list[di
             batch = []
     if batch:
         yield batch
+
+
+def upsert_batch(file_path: str) -> None:
+    rows = []
+    json_path = Path(file_path)
+    with json_path.open("r", encoding="utf-8") as f:
+        stores = json.load(f)
+        for store in stores:
+            # rows.append({
+            #     'record_id': store.get('record_id'),
+            #     'primary_food_category': store.get('primary_food_category')
+            # })
+            record_id = store.get("record_id")
+            supabase.table("stores").update(store).eq("record_id", record_id).execute()
 
 
 def insert_batch(
@@ -116,7 +149,9 @@ def import_csv(csv_path: Path, batch_size: int) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Import EBT store CSV rows into Postgres.")
+    parser = argparse.ArgumentParser(
+        description="Import EBT store CSV rows into Postgres."
+    )
     parser.add_argument(
         "csv_path",
         type=Path,
@@ -137,4 +172,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    upsert_batch("enriched_stores.json")
