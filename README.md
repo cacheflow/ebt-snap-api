@@ -210,6 +210,43 @@ Supported filters:
 
 ---
 
+# MCP Server
+
+The same data is exposed as an [MCP](https://modelcontextprotocol.io) server over Streamable HTTP (stateless, JSON responses) at:
+
+```txt
+http://localhost:8000/mcp
+```
+
+Tools are defined in `app/mcp_server.py` with the MCP Python SDK. They call the same query functions as the HTTP routes (`app/queries.py`) directly, return structured output, and are annotated read-only.
+
+| Tool                     | Equivalent route   |
+| ------------------------ | ------------------ |
+| `search_stores`          | `GET /stores`      |
+| `get_store`              | `GET /stores/{id}` |
+| `search_rmp_restaurants` | `GET /rmp`         |
+| `get_rmp_restaurant`     | `GET /rmp/{id}`    |
+
+List tools cap `limit` at 100 (the HTTP API allows 500) to keep results within a model's context.
+
+Connect from Claude Code:
+
+```bash
+claude mcp add --transport http ebt-snap http://localhost:8000/mcp
+```
+
+Or open the MCP Inspector:
+
+```bash
+npx -y @modelcontextprotocol/inspector@2.13.0 --web --transport http --server-url http://127.0.0.1:8000/mcp
+```
+
+**Deploying:** `/mcp` has DNS-rebinding protection and only accepts local `Host` headers by default. Set `MCP_ALLOWED_HOSTS` (comma-separated, e.g. `api.example.com,api.example.com:*`) to your public hostname, or requests get `421 Misdirected Request`.
+
+`mcp` is pinned `<2`: the server uses the 1.x `FastMCP` API.
+
+---
+
 # Development Notes
 
 Store filtering is handled by `apply_store_filters`.

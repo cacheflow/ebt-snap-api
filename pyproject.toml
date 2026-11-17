@@ -1,0 +1,38 @@
+[project]
+name = "ebt-snap-api"
+version = "0.1.0"
+description = "API for querying USDA EBT/SNAP-authorized retailers and Restaurant Meals Program locations."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.136.1,<1.0",
+    "uvicorn[standard]>=0.30,<1.0",
+    "sqlalchemy>=2.0,<3.0",
+    "psycopg[binary]>=3.2,<4.0",
+    "python-dotenv>=1.0,<2.0",
+    "mcp>=1.12,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0,<9.0",
+    "httpx>=0.27,<1.0",
+]
+# Used by scripts/import_stores.py (and its tests); not needed to serve the API.
+scripts = [
+    "rich>=13.0",
+    "supabase>=2.0,<3.0",
+]
+
+[tool.uv]
+# This is an application, not a library: don't build/install it as a package.
+package = false
+default-groups = ["dev", "scripts"]
+
+[tool.fastapi]
+entrypoint = "main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Tests import `app` and `scripts` from the project root.
+pythonpath = ["."]

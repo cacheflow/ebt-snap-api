@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from functools import lru_cache
 from typing import Iterator
 
@@ -40,5 +41,12 @@ def get_engine() -> Engine:
 
 
 def get_session() -> Iterator[Session]:
+    with Session(get_engine()) as session:
+        yield session
+
+
+@contextmanager
+def session_scope() -> Iterator[Session]:
+    """get_session for code outside FastAPI dependency injection (MCP tools)."""
     with Session(get_engine()) as session:
         yield session
