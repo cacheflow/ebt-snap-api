@@ -3,10 +3,7 @@ import json
 from sqlalchemy import Select, or_
 from app.models import Store
 import json
-import pdb
 import re
-
-from app.routers import stores
 
 
 def clean(value: str | None) -> str | None:
@@ -188,7 +185,10 @@ def count_missing_food_category(file_path: str) -> int:
         return missing_count
 
 
-mapepd_rmp_stores = map_store_to_food_category()
-create_store_file(mapepd_rmp_stores)
+if __name__ == "__main__":
+    # One-off enrichment script. Guarded so importing this module (which every
+    # router does) doesn't read store_names.json / write enriched_stores.json.
+    mapepd_rmp_stores = map_store_to_food_category()
+    create_store_file(mapepd_rmp_stores)
 
-missing_count = count_missing_food_category("enriched_stores.json")
+    missing_count = count_missing_food_category("enriched_stores.json")

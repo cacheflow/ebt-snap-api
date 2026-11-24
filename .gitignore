@@ -35,3 +35,5 @@ node_modules/
 *.geojson
 .envrc
 .pyc
+.claude/skills/fastapi
+.agents/skills/fastapi
